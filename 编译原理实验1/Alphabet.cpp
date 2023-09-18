@@ -63,19 +63,55 @@ bool Alphabet::GetToken(std::string input)
 			switch (input[pos])
 			{
 			case '+':
+			{
+				auto res = judgePlus(input, pos);
+				token.ID = res.ID;
+				token.value = res.value;
+				tokens.push_back(token);
+				pos = res.newpos;
+				break;
+			}
 			case '-':
+			{
+				auto res = judgeMinus(input, pos);
+				token.ID = res.ID;
+				token.value = res.value;
+				tokens.push_back(token);
+				pos = res.newpos;
+				break;
+			}
 			case '*':
+			{
+				auto res = judgeMultiply(input, pos);
+				token.ID = res.ID;
+				token.value = res.value;
+				tokens.push_back(token);
+				pos = res.newpos;
+				break;
+			}
 			case '/':
+			{
+				auto res = judgeDivide(input, pos);
+				token.ID = res.ID;
+				token.value = res.value;
+				tokens.push_back(token);
+				pos = res.newpos;
+				break;
+			}
 			case '%':
+			{
+				auto res = judgeMod(input, pos);
+				token.ID = res.ID;
+				token.value = res.value;
+				tokens.push_back(token);
+				pos = res.newpos;
+				break;
+			}
 			case '=':
 				if (judgeComplex(input, pos))
 				{
 					if (input[pos] == '=')  // 如果是等号，两个等号出现说明是关系运算符
 						token.ID = TokenType::Relation;
-					else if ((input[pos] == '+' || input[pos] == '-') && input[pos + 1] == '=')
-						token.ID = TokenType::Assignment;
-					else if (input[pos] == '*' || input[pos] == '/' || input[pos] == '%')
-						token.ID = TokenType::Arithmetic;
 					else
 						token.ID = TokenType::Arithmetic;
 					token.value = input.substr(pos, 2);
@@ -88,14 +124,80 @@ bool Alphabet::GetToken(std::string input)
 				tokens.push_back(token);
 				break;
 			case '&':
+				if (judgeComplex(input, pos))
+				{
+					// 先判断是不是&&和&=的情况
+					if (input[pos + 1] == '&')
+					{
+						token.ID = TokenType::Logic;
+						token.value = input.substr(pos, 2);
+						tokens.push_back(token);
+						pos++;
+						break;
+					}
+					if (input[pos + 1] == '=')
+					{
+						token.ID = TokenType::Assignment;
+						token.value = input.substr(pos, 2);
+						tokens.push_back(token);
+						pos++;
+						break;
+					}
+					// 再判断是否为引用符号, e.g.: &a
+					nowpos = pos + 1;
+					while (input[nowpos] == 32 || input[nowpos] == 9)
+						nowpos++;
+					if (isalpha(input[nowpos]) || input[nowpos] == '_')
+					{
+						token.ID = TokenType::Others;
+						token.value = input[pos];
+						tokens.push_back(token);
+						break;
+					}
+				}
+				else
+				{
+					// 单一个时是位运算符
+					token.ID = TokenType::Bitwise;
+					token.value = input[pos];
+					tokens.push_back(token);
+					break;
+				}
 			case '|':
+				if (judgeComplex(input, pos))
+				{
+					// 判断是不是||和|=的情况
+					if (input[pos + 1] == '|')
+					{
+						token.ID = TokenType::Logic;
+						token.value = input.substr(pos, 2);
+						tokens.push_back(token);
+						pos++;
+						break;
+					}
+					if (input[pos + 1] == '=')
+					{
+						token.ID = TokenType::Assignment;
+						token.value = input.substr(pos, 2);
+						tokens.push_back(token);
+						pos++;
+						break;
+					}
+				}
+				else
+				{
+					// 单一个时是位运算符
+					token.ID = TokenType::Bitwise;
+					token.value = input[pos];
+					tokens.push_back(token);
+					break;
+				}
 			case '!':
 				if (judgeComplex(input, pos))
 				{
+					// 针对!判断是否!=的情况
 					if (input[pos] == '!')
 						token.ID = TokenType::Relation;
-					else if ((input[pos] == '&' || input[pos] == '|') && input[pos + 1] == '=')
-						token.ID = TokenType::Assignment;
 					else
 						token.ID = TokenType::Logic;
 					token.value = input.substr(pos, 2);
@@ -103,11 +205,14 @@ bool Alphabet::GetToken(std::string input)
 					pos++;
 					break;
 				}
+				token.ID = TokenType::Logic;
+				token.value = input[pos];
+				tokens.push_back(token);
 			case '<':
 			case '>':
 				if (judgeComplex(input, pos))
 				{
-					if ((input[pos] == '<' || input[pos] == '>') && input[pos + 1] == '=')
+					if (input[pos + 1] == '=')
 						token.ID = TokenType::Relation;
 					else
 						token.ID = TokenType::Bitwise;
@@ -120,8 +225,16 @@ bool Alphabet::GetToken(std::string input)
 				token.value = input[pos];
 				tokens.push_back(token);
 				break;
-			case '^':
 			case '~':
+			case '^':
+				if (judgeComplex(input, pos))
+				{
+					token.ID = TokenType::Bitwise;
+					token.value = input.substr(pos, 2);
+					tokens.push_back(token);
+					pos++;
+					break;
+				}
 				token.ID = TokenType::Bitwise;
 				token.value = input[pos];
 				tokens.push_back(token);
@@ -130,15 +243,14 @@ bool Alphabet::GetToken(std::string input)
 			case '}':
 			case '(':
 			case ')':
-			case '[':
-			case ']':
 			case ',':
 			case ';':
 				token.ID = TokenType::Division;
 				token.value = input[pos];
 				tokens.push_back(token);
 				break;
-
+			case '[':
+			case ']':
 			default:
 				break;
 			}
@@ -199,7 +311,7 @@ bool Alphabet::judgeComplex(std::string input, int pos)
 			return false;
 		}
 	}
-	if (input[pos] == '*' || input[pos] == '/' || input[pos] == '%' || input[pos] == '!' || input[pos] == '=')
+	if (input[pos] == '*' || input[pos] == '%' || input[pos] == '!' || input[pos] == '=' || input[pos] == '^')
 	{
 		if (input[nextpos] == '=')
 			return true;
@@ -233,4 +345,64 @@ bool Alphabet::judgeComplex(std::string input, int pos)
 			return true;
 		return false;
 	}
+	if (input[pos] == '/')
+	{
+		if (input[nextpos] == '=' || input[nextpos] == '/' || input[nextpos] == '*')
+			return true;
+		return false;
+	}
+	return false;
+}
+
+JudgingComplex Alphabet::judgePlus(std::string input, int pos)
+{
+	int np = pos + 1;
+	if (judgeComplex(input, pos))
+	{
+		if (input[np] == '=')
+			return JudgingComplex(TokenType::Assignment, "+=", np);
+		if (input[np] == '+')
+			return JudgingComplex(TokenType::Arithmetic, "++", np);
+	}
+	return JudgingComplex(TokenType::Arithmetic, "+", pos);
+}
+
+JudgingComplex Alphabet::judgeMinus(std::string input, int pos)
+{
+	int np = pos + 1;
+	if (judgeComplex(input, pos))
+	{
+		if (input[np] == '=')
+			return JudgingComplex(TokenType::Assignment, "-=", np);
+		if (input[np] == '-')
+			return JudgingComplex(TokenType::Arithmetic, "--", np);
+	}
+	return JudgingComplex(TokenType::Arithmetic, "-", pos);
+}
+
+JudgingComplex Alphabet::judgeMultiply(std::string input, int pos)
+{
+	if (judgeComplex(input, pos))
+		return JudgingComplex(TokenType::Assignment, "*=", pos + 1);
+	return JudgingComplex(TokenType::Arithmetic, "*", pos);
+}
+
+JudgingComplex Alphabet::judgeDivide(std::string input, int pos)
+{
+	int np = pos + 1;
+	if (judgeComplex(input, pos))
+	{
+		if (input[np] == '=')
+			return JudgingComplex(TokenType::Assignment, "/=", np);
+		else if (input[pos + 1] == '/' || input[pos + 1] == '*')
+			return JudgingComplex(TokenType::Comment, "//", np);
+	}
+	return JudgingComplex(TokenType::Arithmetic, "/", pos);
+}
+
+JudgingComplex Alphabet::judgeMod(std::string input, int pos)
+{
+	if (judgeComplex(input, pos))
+		return JudgingComplex(TokenType::Assignment, "%=", pos + 1);
+	return JudgingComplex(TokenType::Arithmetic, "%", pos);
 }

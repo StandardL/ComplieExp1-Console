@@ -23,6 +23,15 @@ struct Token
 	std::string value;
 };
 
+struct JudgingComplex
+{
+	TokenType ID;
+	std::string value;
+	int newpos;  // 复合运算符的下一个位置
+	JudgingComplex() {}
+	JudgingComplex(TokenType id, std::string value, int np) : ID(id), value(value), newpos(np) {}
+};
+
 class Alphabet
 {
 public:
@@ -34,5 +43,11 @@ public:
 private:
 	std::set<std::string> keywords;  // 保留的关键字
 	bool judgeComplex(std::string, int pos);  // 判断是否为复合运算符
+	JudgingComplex judgePlus(std::string, int pos);  // 加号是否复合，是的话返回复合运算符
+	JudgingComplex judgeMinus(std::string, int pos);  // 减号是否复合，是的话返回复合运算符
+	JudgingComplex judgeMultiply(std::string, int pos);  // 乘号是否复合，是的话返回复合运算符
+	JudgingComplex judgeDivide(std::string, int pos);  // 除号是否复合，是的话返回复合运算符
+	JudgingComplex judgeMod(std::string, int pos);  // 取模是否复合，是的话返回复合运算符
+
 };
 
