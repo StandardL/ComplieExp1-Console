@@ -108,90 +108,32 @@ bool Alphabet::GetToken(std::string input)
 				break;
 			}
 			case '=':
-				if (judgeComplex(input, pos))
-				{
-					if (input[pos] == '=')  // 如果是等号，两个等号出现说明是关系运算符
-						token.ID = TokenType::Relation;
-					else
-						token.ID = TokenType::Arithmetic;
-					token.value = input.substr(pos, 2);
-					tokens.push_back(token);
-					pos++;
-					break;
-				}
-				token.ID = TokenType::Arithmetic;
-				token.value = input[pos];
+			{
+				auto res = judgeEqual(input, pos);
+				token.ID = res.ID;
+				token.value = res.value;
 				tokens.push_back(token);
+				pos = res.newpos;
 				break;
+			}
 			case '&':
-				if (judgeComplex(input, pos))
-				{
-					// 先判断是不是&&和&=的情况
-					if (input[pos + 1] == '&')
-					{
-						token.ID = TokenType::Logic;
-						token.value = input.substr(pos, 2);
-						tokens.push_back(token);
-						pos++;
-						break;
-					}
-					if (input[pos + 1] == '=')
-					{
-						token.ID = TokenType::Assignment;
-						token.value = input.substr(pos, 2);
-						tokens.push_back(token);
-						pos++;
-						break;
-					}
-					// 再判断是否为引用符号, e.g.: &a
-					nowpos = pos + 1;
-					while (input[nowpos] == 32 || input[nowpos] == 9)
-						nowpos++;
-					if (isalpha(input[nowpos]) || input[nowpos] == '_')
-					{
-						token.ID = TokenType::Others;
-						token.value = input[pos];
-						tokens.push_back(token);
-						break;
-					}
-				}
-				else
-				{
-					// 单一个时是位运算符
-					token.ID = TokenType::Bitwise;
-					token.value = input[pos];
-					tokens.push_back(token);
-					break;
-				}
+			{
+				auto res = judgeAnd(input, pos);
+				token.ID = res.ID;
+				token.value = res.value;
+				tokens.push_back(token);
+				pos = res.newpos;
+				break;
+			}
 			case '|':
-				if (judgeComplex(input, pos))
-				{
-					// 判断是不是||和|=的情况
-					if (input[pos + 1] == '|')
-					{
-						token.ID = TokenType::Logic;
-						token.value = input.substr(pos, 2);
-						tokens.push_back(token);
-						pos++;
-						break;
-					}
-					if (input[pos + 1] == '=')
-					{
-						token.ID = TokenType::Assignment;
-						token.value = input.substr(pos, 2);
-						tokens.push_back(token);
-						pos++;
-						break;
-					}
-				}
-				else
-				{
-					// 单一个时是位运算符
-					token.ID = TokenType::Bitwise;
-					token.value = input[pos];
-					tokens.push_back(token);
-					break;
-				}
+			{
+				auto res = judgeOr(input, pos);
+				token.ID = res.ID;
+				token.value = res.value;
+				tokens.push_back(token);
+				pos = res.newpos;
+				break;
+			}
 			case '!':
 				if (judgeComplex(input, pos))
 				{
@@ -376,6 +318,8 @@ JudgingComplex Alphabet::judgeMinus(std::string input, int pos)
 			return JudgingComplex(TokenType::Assignment, "-=", np);
 		if (input[np] == '-')
 			return JudgingComplex(TokenType::Arithmetic, "--", np);
+		if (input[np] == '>')
+			return JudgingComplex(TokenType::Others, "->", np);
 	}
 	return JudgingComplex(TokenType::Arithmetic, "-", pos);
 }
@@ -405,4 +349,49 @@ JudgingComplex Alphabet::judgeMod(std::string input, int pos)
 	if (judgeComplex(input, pos))
 		return JudgingComplex(TokenType::Assignment, "%=", pos + 1);
 	return JudgingComplex(TokenType::Arithmetic, "%", pos);
+}
+
+JudgingComplex Alphabet::judgeEqual(std::string input, int pos)
+{
+	if (judgeComplex(input, pos))
+		return JudgingComplex(TokenType::Logic, "==", pos + 1);
+	return JudgingComplex(TokenType::Assignment, "=", pos);
+}
+
+JudgingComplex Alphabet::judgeAnd(std::string input, int pos)
+{
+	int np = pos + 1;
+	if (judgeComplex(input, pos))
+	{
+		// 先判断是不是&&和&=的情况
+		if (input[np] == '&')
+			return JudgingComplex(TokenType::Logic, "&&", np);
+		if (input[np] == '=')
+			return JudgingComplex(TokenType::Assignment, "&=", np);
+		// 再判断是否为引用符号, e.g.: &a
+		while (input[np] == 32 || input[np] == 9)
+			np++;
+		if (isalpha(input[np]) || input[np] == '_')
+		{
+			string v;
+			while(isalpha(input[np]) || input[np] == '_' || isdigit(input[np]))
+				v += input[np];
+			return JudgingComplex(TokenType::Others, v, np);
+		}
+	}
+	return JudgingComplex(TokenType::Bitwise, "&", pos);
+}
+
+JudgingComplex Alphabet::judgeOr(std::string input, int pos)
+{
+	int np = pos + 1;
+	if (judgeComplex(input, pos))
+	{
+		// 判断是不是||和|=的情况
+		if (input[np] == '|')
+			return JudgingComplex(TokenType::Logic, "||", np);
+		if (input[np] == '=')
+			return JudgingComplex(TokenType::Assignment, "|=", np);
+	}
+	return JudgingComplex(TokenType::Bitwise, "|", pos);
 }

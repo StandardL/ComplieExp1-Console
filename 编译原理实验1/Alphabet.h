@@ -48,6 +48,11 @@ private:
 	JudgingComplex judgeMultiply(std::string, int pos);  // 乘号是否复合，是的话返回复合运算符
 	JudgingComplex judgeDivide(std::string, int pos);  // 除号是否复合，是的话返回复合运算符
 	JudgingComplex judgeMod(std::string, int pos);  // 取模是否复合，是的话返回复合运算符
-
+	JudgingComplex judgeEqual(std::string, int pos);  // 等号是否复合
+	JudgingComplex judgeAnd(std::string, int pos);  // &
+	JudgingComplex judgeOr(std::string, int pos);  // |
+	JudgingComplex judgeNot(std::string, int pos);  // !
+	JudgingComplex judgeLess(std::string, int pos);  // <
+	JudgingComplex judgeGreat(std::string, int pos);  // >
 };
 
