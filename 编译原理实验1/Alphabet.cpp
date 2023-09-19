@@ -135,40 +135,41 @@ bool Alphabet::GetToken(std::string input)
 				break;
 			}
 			case '!':
-				if (judgeComplex(input, pos))
-				{
-					// 针对!判断是否!=的情况
-					if (input[pos] == '!')
-						token.ID = TokenType::Relation;
-					else
-						token.ID = TokenType::Logic;
-					token.value = input.substr(pos, 2);
-					tokens.push_back(token);
-					pos++;
-					break;
-				}
-				token.ID = TokenType::Logic;
-				token.value = input[pos];
+			{
+				auto res = judgeNot(input ,pos);
+				token.ID = res.ID;
+				token.value = res.value;
 				tokens.push_back(token);
+				pos = res.newpos;
+				break;
+			}
 			case '<':
+			{
+				auto res = judgeLess(input, pos);
+				token.ID = res.ID;
+				token.value = res.value;
+				tokens.push_back(token);
+				pos = res.newpos;
+				break;
+			}
 			case '>':
-				if (judgeComplex(input, pos))
-				{
-					if (input[pos + 1] == '=')
-						token.ID = TokenType::Relation;
-					else
-						token.ID = TokenType::Bitwise;
-					token.value = input.substr(pos, 2);
-					tokens.push_back(token);
-					pos++;
-					break;
-				}
-				token.ID = TokenType::Relation;
+			{
+				auto res = judgeGreat(input, pos);
+				token.ID = res.ID;
+				token.value = res.value;
+				tokens.push_back(token);
+				pos = res.newpos;
+				break;
+			}
+			case '~':
+			{
+				token.ID = TokenType::Bitwise;
 				token.value = input[pos];
 				tokens.push_back(token);
 				break;
-			case '~':
+			}
 			case '^':
+			{
 				if (judgeComplex(input, pos))
 				{
 					token.ID = TokenType::Bitwise;
@@ -181,22 +182,25 @@ bool Alphabet::GetToken(std::string input)
 				token.value = input[pos];
 				tokens.push_back(token);
 				break;
+			}
 			case '{':
 			case '}':
 			case '(':
 			case ')':
 			case ',':
 			case ';':
+			case '[':
+			case ']':
 				token.ID = TokenType::Division;
 				token.value = input[pos];
 				tokens.push_back(token);
 				break;
-			case '[':
-			case ']':
 			default:
+				token.ID = TokenType::Special;
+				token.value = input[pos];
+				tokens.push_back(token);
 				break;
 			}
-
 			pos++;
 		}
 		else token.ID = TokenType::Endinput;
@@ -394,4 +398,51 @@ JudgingComplex Alphabet::judgeOr(std::string input, int pos)
 			return JudgingComplex(TokenType::Assignment, "|=", np);
 	}
 	return JudgingComplex(TokenType::Bitwise, "|", pos);
+}
+
+JudgingComplex Alphabet::judgeNot(std::string input, int pos)
+{
+	if (judgeComplex(input, pos))
+		return JudgingComplex(TokenType::Relation, "!=", pos + 1);
+	return JudgingComplex(TokenType::Logic, "!", pos);
+}
+
+JudgingComplex Alphabet::judgeLess(std::string input, int pos)
+{
+	int np = pos + 1;
+	if (judgeComplex(input, pos))
+	{
+		if (input[np] == '=')
+			return JudgingComplex(TokenType::Relation, "<=", pos);
+		if (input[np] == '<')
+		{
+			// 判断是否是单纯的位移还是位移并赋值
+			int nnp = np + 1;
+			if (input[nnp] == '=')
+				return JudgingComplex(TokenType::Assignment, "<<=", nnp);
+			else
+				return JudgingComplex(TokenType::Bitwise, "<<", np);
+		}
+	}
+	return JudgingComplex(TokenType::Relation, "<", pos);
+}
+
+JudgingComplex Alphabet::judgeGreat(std::string input, int pos)
+{
+	int np = pos + 1;
+	if (judgeComplex(input, pos))
+	{
+		if (input[np] == '=')
+			return JudgingComplex(TokenType::Relation, ">=", pos);
+		if (input[np] == '>')
+		{
+			// 判断是否是单纯的位移还是位移并赋值
+			int nnp = np + 1;
+			if (input[nnp] == '=')
+				return JudgingComplex(TokenType::Assignment, ">>=", nnp);
+			else
+				return JudgingComplex(TokenType::Bitwise, ">>", np);
+		}
+	}
+	return JudgingComplex(TokenType::Relation, ">", pos);
 }
