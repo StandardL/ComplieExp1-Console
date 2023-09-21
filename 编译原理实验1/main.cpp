@@ -9,7 +9,7 @@ int main()
 
 	while (getline(cin, input)) // 读取一行算数表达式
 	{
-		if (input == "ok") break;
+		if (input == "ENDINPUT") break;
 		alphabet.GetToken(input); // 读取所有单词
 	}
 
