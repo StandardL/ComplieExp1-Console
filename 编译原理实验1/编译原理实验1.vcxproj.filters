@@ -30,4 +30,7 @@
   <ItemGroup>
     <None Include="Keywords.csv" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="Sample.txt" />
+  </ItemGroup>
 </Project>
