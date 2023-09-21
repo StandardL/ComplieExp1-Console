@@ -3,7 +3,7 @@ using namespace std;
 
 Alphabet::Alphabet()
 {
-	//set<string> initset{"auto", "bool", "break", "case"}
+	ReadKeywords();
 }
 
 Alphabet::~Alphabet()
@@ -54,7 +54,12 @@ bool Alphabet::GetToken(std::string input)
 				str += input[pos];
 				pos++;
 			}
-			token.ID = TokenType::Var;
+			// if (str == "sizeof")
+			// {
+			// 	token.ID = TokenType::Others;
+			// }
+			// token.ID = TokenType::Var;
+			str == "sizeof" ? token.ID = TokenType::Others : token.ID = TokenType::Var;
 			token.value = str;
 			tokens.push_back(token);
 		}
@@ -92,10 +97,39 @@ bool Alphabet::GetToken(std::string input)
 			case '/':
 			{
 				auto res = judgeDivide(input, pos);
-				token.ID = res.ID;
-				token.value = res.value;
-				tokens.push_back(token);
 				pos = res.newpos;
+				token.ID = res.ID;
+				// 处理多行注释
+				if (token.ID == TokenType::Comment && token.value == "/*")
+				{
+					while (true)
+					{
+						if (input[pos] == '*')  // 有机会结束
+						{
+							if (input[pos+1] == '/')  // 真的可以结束
+							{
+								token.value += "*/";
+								pos++;
+								break;
+							}
+						}
+						token.value += input[pos];
+						pos++;
+						// 如果已经到了这行的结尾，就需要再读一行新的
+						if (pos >= input.length())
+						{
+							// TODO 新增功能：读一行输入，如果没有输入怎么办。
+							getline(cin, input);
+							if (input == "ENDINPUT")
+								break;
+							pos = 0;
+						}
+					}
+				}
+				else
+					token.value = res.value;
+				tokens.push_back(token);
+
 				break;
 			}
 			case '%':
@@ -195,6 +229,37 @@ bool Alphabet::GetToken(std::string input)
 				token.value = input[pos];
 				tokens.push_back(token);
 				break;
+			case '\'':
+			{
+				string str = input.substr(pos, 3);
+				token.ID = TokenType::Char;
+				token.value = str;
+				tokens.push_back(token);
+				pos += 2;
+				break;
+			}
+			case '"':
+			{
+				auto endindex = input.find_first_of('"', pos+1);
+				string str = input.substr(pos, endindex);
+				token.ID = TokenType::String;
+				token.value = str;
+				tokens.push_back(token);
+				pos += str.length() - 1;
+				break;
+			}
+			case '?':
+			{
+				auto endindex = input.find_first_of('?', pos+1);
+				if (endindex != string::npos)
+				{
+					token.value = "?";
+				}
+				token.ID = TokenType::Others;
+				token.value = "?:";
+				tokens.push_back(token);
+				break;
+			}
 			default:
 				token.ID = TokenType::Special;
 				token.value = input[pos];
@@ -213,21 +278,48 @@ void Alphabet::PrintToken()
 {
 	for (auto& token : tokens)
 	{
-		if (token.ID == TokenType::Keyword) cout << token.value << ": " << "关键字" << endl;
-		else if (token.ID == TokenType::Var) cout << token.value << ": " << "变量" << endl;
-		else if (token.ID == TokenType::String) cout << token.value << ": " << "字符串" << endl;
-		else if (token.ID == TokenType::Number) cout << token.value << ": " << "数字" << endl;
-		else if (token.ID == TokenType::Arithmetic) cout << token.value << ": " << "算术运算符" << endl;
-		else if (token.ID == TokenType::Logic) cout << token.value << ": " << "逻辑运算符" << endl;
-		else if (token.ID == TokenType::Relation) cout << token.value << ": " << "关系运算符" << endl;
-		else if (token.ID == TokenType::Bitwise) cout << token.value << ": " << "位运算符" << endl;
-		else if (token.ID == TokenType::Assignment) cout << token.value << ": " << "赋值运算符" << endl;
-		else if (token.ID == TokenType::Others) cout << token.value << ": " << "杂项运算符" << endl;
-		else if (token.ID == TokenType::Comment) cout << token.value << ": " << "注释" << endl;
-		else if (token.ID == TokenType::Division) cout << token.value << ": " << "分割符" << endl;
-		else if (token.ID == TokenType::Special) cout << token.value << ": " << "特殊符号" << endl;
+		if (token.ID == TokenType::Keyword) cout << token.value << cout.width(5) << "关键字" << endl;
+		else if (token.ID == TokenType::Var) cout << token.value << cout.width(5) << "变量" << endl;
+		else if (token.ID == TokenType::String) cout << token.value << cout.width(5) << "字符串" << endl;
+		else if (token.ID == TokenType::Char) cout << token.value << cout.width(5) << "字符" << endl;
+		else if (token.ID == TokenType::Number) cout << token.value << cout.width(5) << "数字" << endl;
+		else if (token.ID == TokenType::Arithmetic) cout << token.value << cout.width(5) << "算术运算符" << endl;
+		else if (token.ID == TokenType::Logic) cout << token.value << cout.width(5) << "逻辑运算符" << endl;
+		else if (token.ID == TokenType::Relation) cout << token.value << cout.width(5) << "关系运算符" << endl;
+		else if (token.ID == TokenType::Bitwise) cout << token.value << cout.width(5) << "位运算符" << endl;
+		else if (token.ID == TokenType::Assignment) cout << token.value << cout.width(5) << "赋值运算符" << endl;
+		else if (token.ID == TokenType::Others) cout << token.value << cout.width(5) << "杂项运算符" << endl;
+		else if (token.ID == TokenType::Comment) cout << token.value << cout.width(5) << "注释" << endl;
+		else if (token.ID == TokenType::Division) cout << token.value << cout.width(5) << "分割符" << endl;
+		else if (token.ID == TokenType::Special) cout << token.value << cout.width(5) << "特殊符号" << endl;
 		else if (token.ID == TokenType::Endinput) return;
 	}
+}
+
+void Alphabet::ReadKeywords()
+{
+	ifstream csv_file("Keywords.csv", ios::in);
+	if (!csv_file.is_open())
+	{
+		cout << "Error: Fail to open Keywords.csv." << endl;
+		exit(1);
+	}
+	istringstream ss;
+	string word, fields, line;
+
+	while (getline(csv_file, line))
+	{
+		ss.clear();
+		ss.str(line);
+		word.clear();
+		while (getline(ss, word, ','))
+		{
+			this->keywords.insert(word);
+		}
+	}	
+
+
+	csv_file.close();
 }
 
 bool Alphabet::judgeComplex(std::string input, int pos)
