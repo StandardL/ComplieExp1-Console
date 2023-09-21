@@ -41,6 +41,7 @@ public:
 	~Alphabet();
 	std::vector<Token> tokens;  // 分割后的字符串
 	bool GetToken(std::string);  // 读入字符串的准备工作
+	bool ResetToken();  // 重置tokens
 	void PrintToken();  // 打印分割后的字符串
 private:
 	std::set<std::string> keywords;  // 保留的关键字

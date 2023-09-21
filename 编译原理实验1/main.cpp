@@ -11,6 +11,8 @@ int main()
 	{
 		if (input == "ENDINPUT") break;
 		alphabet.GetToken(input); // 读取所有单词
+		//alphabet.PrintToken(); // 打印所有单词
+		//alphabet.ResetToken(); // 重置所有单词
 	}
 
 	alphabet.PrintToken();
