@@ -22,28 +22,13 @@ bool Alphabet::GetToken(std::string input)
 			pos++;
 
 		nowpos = pos;
+		// TODO 处理正负号
 		if ((input[nowpos] >= '0') && (input[nowpos] <= '9'))  // 数字
 		{
-			nowpos = pos;
-			string numstr = "";
-			while ((input[nowpos] >= '0') && (input[nowpos] <= '9'))  // 整数
-			{
-				numstr += input[nowpos];
-				nowpos++;
-			}
-			if (input[nowpos] == '.')  // 小数
-			{
-				numstr += input[nowpos];
-				nowpos++;
-				while ((input[nowpos] >= '0') && (input[nowpos] <= '9'))
-				{
-					numstr += input[nowpos];
-					nowpos++;
-				}
-			}
-			token.ID = TokenType::Number;
-			token.value = numstr;
-			pos = nowpos;
+			auto res = dealwithSignNum(input, pos);
+			token.ID = res.ID;
+			token.value = res.value;
+			pos = res.newpos;
 			tokens.push_back(token);
 		}
 		else if (isalpha(input[pos]) || input[pos] == '_')  // 判断变量
@@ -54,11 +39,6 @@ bool Alphabet::GetToken(std::string input)
 				str += input[pos];
 				pos++;
 			}
-			// if (str == "sizeof")
-			// {
-			// 	token.ID = TokenType::Others;
-			// }
-			// token.ID = TokenType::Var;
 			str == "sizeof" ? token.ID = TokenType::Others : token.ID = TokenType::Var;
 			token.value = str;
 			tokens.push_back(token);
@@ -401,6 +381,13 @@ JudgingComplex Alphabet::judgePlus(std::string input, int pos)
 			return JudgingComplex(TokenType::Assignment, "+=", np);
 		if (input[np] == '+')
 			return JudgingComplex(TokenType::Arithmetic, "++", np);
+		if (input[np] >= '0' || input[np] <= '9')  // 处理正负号
+		{
+			auto res = dealwithSignNum(input, np);
+			int nnp = res.newpos;
+			string numstr = "+" + res.value;
+			return JudgingComplex(TokenType::Number, numstr, nnp);
+		}
 	}
 	return JudgingComplex(TokenType::Arithmetic, "+", pos);
 }
@@ -416,6 +403,13 @@ JudgingComplex Alphabet::judgeMinus(std::string input, int pos)
 			return JudgingComplex(TokenType::Arithmetic, "--", np);
 		if (input[np] == '>')
 			return JudgingComplex(TokenType::Others, "->", np);
+		if (input[np] >= '0' || input[np] <= '9')  // 处理正负号
+		{
+			auto res = dealwithSignNum(input, np);
+			int nnp = res.newpos;
+			string numstr = "-" + res.value;
+			return JudgingComplex(TokenType::Number, numstr, nnp);
+		}
 	}
 	return JudgingComplex(TokenType::Arithmetic, "-", pos);
 }
@@ -537,4 +531,38 @@ JudgingComplex Alphabet::judgeGreat(std::string input, int pos)
 		}
 	}
 	return JudgingComplex(TokenType::Relation, ">", pos);
+}
+
+JudgingComplex Alphabet::dealwithSignNum(std::string input, int pos)
+{
+	int nowpos = pos;
+	string numstr = "";
+	while ((input[nowpos] >= '0') && (input[nowpos] <= '9'))  // 整数
+	{
+		numstr += input[nowpos];
+		nowpos++;
+	}
+	if (input[nowpos] == '.')  // 小数
+	{
+		numstr += input[nowpos];
+		nowpos++;
+		while ((input[nowpos] >= '0') && (input[nowpos] <= '9'))
+		{
+			numstr += input[nowpos];
+			nowpos++;
+		}
+	}
+	// TODO 处理科学计数法
+	if (input[nowpos] == 'e' || input[nowpos] == 'E')  // e or E
+	{
+		numstr += input[nowpos];
+		nowpos++;
+		while (input[nowpos] == '+' || input[nowpos] == '-' || input[nowpos] >= '0' || input[nowpos] <= '9')
+		{
+			numstr += input[nowpos];
+			nowpos++;
+		}
+	}
+	
+    return JudgingComplex(TokenType::Number, numstr, nowpos);
 }

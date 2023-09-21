@@ -57,5 +57,7 @@ private:
 	JudgingComplex judgeNot(std::string, int pos);  // !
 	JudgingComplex judgeLess(std::string, int pos);  // <
 	JudgingComplex judgeGreat(std::string, int pos);  // >
+
+	JudgingComplex dealwithSignNum(std::string, int pos);  //+-
 };
 
