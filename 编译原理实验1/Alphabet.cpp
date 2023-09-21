@@ -43,9 +43,17 @@ bool Alphabet::GetToken(std::string input)
 			token.value = str;
 			tokens.push_back(token);
 		}
-		else if (tokens.back().value == "include")  // 判断头文件
+		else if (!tokens.empty() && tokens.back().value == "include")  // 判断头文件
 		{
-
+			string hf;  // hf = headfile
+			if (input[pos] == '<')  // <iostream>情况
+				hf = input.substr(pos, input.find_first_of('>', pos) - pos + 1);
+			else
+				hf = input.substr(pos, input.find_first_of('\"', pos) - pos + 1);
+			token.value = hf;
+			token.ID = TokenType::Special;
+			tokens.push_back(token);
+			pos += hf.length();
 		}
 		else if (input[pos] != '\n')  // 判断符号
 		{
@@ -268,7 +276,7 @@ void Alphabet::PrintToken()
 	for (auto& token : tokens)
 	{
 		if (token.ID == TokenType::Keyword) cout << "关键字" << "\t\t" << token.value << endl;
-		else if (token.ID == TokenType::Var) cout << "变量" << "\t\t" << token.value << endl;
+		else if (token.ID == TokenType::Var) cout << "标识符" << "\t\t" << token.value << endl;
 		else if (token.ID == TokenType::String) cout << "字符串" << "\t\t" << token.value << endl;
 		else if (token.ID == TokenType::Char) cout << "字符" << "\t\t" << token.value << endl;
 		else if (token.ID == TokenType::Number) cout << "数字" << "\t\t" << token.value << endl;
