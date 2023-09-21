@@ -1,0 +1,33 @@
+#include <iostream>
+
+/*
+This is a simple test text.
+Here is the text.
+*/
+int main()
+{// judge i is greater than 3
+    int i;
+    char a = 'y', b, c;
+    cin >> i;
+    if (i > 3) cout << "ok";
+    else cout << "wrong";
+
+    cin >> b;
+    switch (b) {
+    case 'y':
+        cout << "a is equal b" << endl;
+        break;
+    default:
+        cout << "a is not equal b" << endl;
+        break;
+    }
+
+    cin >> c;
+    if (a == c ? 0 : 1) { cout << "a£¡=c" << endl; }
+    else cout << "a==c" << endl;
+
+    double d = 1.01e+2, e = 2.01E-3, f = -9.5;
+
+
+    return 0;
+}
