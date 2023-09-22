@@ -36,6 +36,7 @@ int main()
 
     // Pointer
     int *a, b, *c;
+    *a = 6;
 
     return 0;
 }
