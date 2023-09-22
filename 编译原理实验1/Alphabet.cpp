@@ -319,6 +319,12 @@ void Alphabet::ReadKeywords()
 	csv_file.close();
 }
 
+bool Alphabet::ResetToken()
+{
+	tokens.clear();
+	return true;
+}
+
 bool Alphabet::judgeComplex(std::string input, int pos)
 {
 	int nextpos = pos + 1;
@@ -433,12 +439,6 @@ JudgingComplex Alphabet::judgeMinus(std::string input, int pos)
 		}
 	}
 	return JudgingComplex(TokenType::Arithmetic, "-", pos);
-}
-
-bool Alphabet::ResetToken()
-{
-	tokens.clear();
-	return true;
 }
 
 JudgingComplex Alphabet::judgeMultiply(std::string input, int pos)
@@ -566,6 +566,17 @@ JudgingComplex Alphabet::dealwithSignNum(std::string input, int pos)
 {
 	int nowpos = pos;
 	string numstr = "";
+	// Deal with HEX
+	if (input[nowpos] == '0' && input[nowpos + 1] == 'x')
+	{
+		numstr += input.substr(nowpos, 2);
+		nowpos += 2;
+		while ((input[nowpos] >= '0' && (input[nowpos] <= '9')) || (input[nowpos] >= 'a' && input[nowpos] <= 'f') || (input[nowpos] >= 'A' && input[nowpos] <= 'F'))
+		{
+			numstr += input[nowpos];
+			nowpos++;
+		}
+	}
 	while ((input[nowpos] >= '0') && (input[nowpos] <= '9'))  // ÕûÊý
 	{
 		numstr += input[nowpos];
