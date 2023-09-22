@@ -57,7 +57,7 @@ bool Alphabet::GetToken(std::string input)
 					// 检查是否是*a开头的情况
 					else if (i >= 0 && tokens[i].ID == TokenType::Division)
 					{
-						auto &last = tokens.back();
+						auto last = tokens.back();
 						tokens.pop_back();
 						last.ID = TokenType::Special;  // 把*变成特殊符号
 						tokens.push_back(last);
@@ -73,7 +73,7 @@ bool Alphabet::GetToken(std::string input)
 			if (input[pos] == '<')  // <iostream>情况
 				hf = input.substr(pos, input.find_first_of('>', pos) - pos + 1);
 			else
-				hf = input.substr(pos, input.find_first_of('\"', pos) - pos + 1);
+				hf = input.substr(pos, input.find_first_of('\"', pos + 1) - pos + 1);
 			token.value = hf;
 			token.ID = TokenType::Special;
 			tokens.push_back(token);
