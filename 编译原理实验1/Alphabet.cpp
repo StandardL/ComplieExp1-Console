@@ -39,7 +39,31 @@ bool Alphabet::GetToken(std::string input)
 			}
 			if (keywords.find(str) != keywords.end())  // 判断是否为关键字
 				token.ID = TokenType::Keyword;
-			else token.ID = TokenType::Var;
+			else
+			{
+				token.ID = TokenType::Var;
+				// 检查其前面是否有指针
+				if (tokens.size() > 0 && tokens.back().value == "*" && tokens.back().ID != TokenType::Special)
+				{
+					// 检查前面是否是逗号或者关键字
+					int i = tokens.size() - 2;
+					if (i >= 0 && (tokens[i].value == "," || tokens[i].ID == TokenType::Keyword))
+					{
+						auto last = tokens.back();
+						tokens.pop_back();
+						last.ID = TokenType::Special;  // 把*变成特殊符号
+						tokens.push_back(last);
+					}
+					// 检查是否是*a开头的情况
+					else if (i >= 0 && tokens[i].ID == TokenType::Division)
+					{
+						auto &last = tokens.back();
+						tokens.pop_back();
+						last.ID = TokenType::Special;  // 把*变成特殊符号
+						tokens.push_back(last);
+					}
+				}
+			}
 			token.value = str;
 			tokens.push_back(token);
 		}
