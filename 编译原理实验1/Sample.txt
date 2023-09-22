@@ -1,4 +1,5 @@
 #include <iostream>
+#include "Alphabet.h"
 
 /*
 This is a simple test text.
@@ -28,6 +29,10 @@ int main()
 
     double _d = 1.01e+2, e_ = 2.01E-3, f = -9.5;
     int new->b = token[2];
+
+    // Now test HEX and OCT
+    int hex = 0x1a2b3c4d;
+    int oct = 01234567;
 
     return 0;
 }
