@@ -34,5 +34,8 @@ int main()
     int hex = 0x1a2b3c4d;
     int oct = 01234567;
 
+    // Pointer
+    int *a, b, *c;
+
     return 0;
 }
