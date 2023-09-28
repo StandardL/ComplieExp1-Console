@@ -1,6 +1,8 @@
 # 编译原理实验1
 本实验的目的是使用C++语言编写一个单词拼装器，简单模拟C++编译器一开始编译时的工作原理。
 
+[GUI项目](https://github.com/StandardL/CompilationPrinciplesExperiment-1)
+
 ## Todo
 
 ### Console
@@ -16,8 +18,8 @@
 - [ ] 优化类函数的实现
 
 ### GUI
-- [ ] 学习QT的基础知识
-- [ ] 文件的选取
+- [X] 学习QT的基础知识
+- [X] 文件的选取
 - [ ] QT界面设计与美化
 
 ### UnitTest
